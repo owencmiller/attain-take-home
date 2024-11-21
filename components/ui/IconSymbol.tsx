@@ -1,6 +1,5 @@
 // This file is a fallback for using MaterialIcons on Android and web.
-
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SymbolWeight } from 'expo-symbols';
 import React from 'react';
 import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
@@ -9,14 +8,14 @@ import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
 const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   // See SF Symbols in the SF Symbols app on Mac.
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
+  'house.fill': 'home-sharp',
+  'tray.2': 'file-tray-stacked-outline',
+  'doc.text': 'receipt-outline', // TODO: find a better SF Icon
+  'cart': 'cart-outline'
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
-    React.ComponentProps<typeof MaterialIcons>['name']
+    React.ComponentProps<typeof Ionicons>['name']
   >
 >;
 
@@ -39,5 +38,5 @@ export function IconSymbol({
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  return <Ionicons color={color} size={size} name={MAPPING[name]}/>;
 }
