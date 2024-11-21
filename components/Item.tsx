@@ -10,6 +10,7 @@ import {
   Button,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
+  Pressable
 } from 'react-native';
 
 export interface ItemProps {
@@ -17,7 +18,9 @@ export interface ItemProps {
   name: string;
   image: string;
   price: string;
+  supplier: string;
   discounted_price: string;
+  unit_size: string;
 }
 
 interface Props {
@@ -31,7 +34,8 @@ export default function Item({item, quantity, onAddToCart}:Props) {
 
     const [modalVisible, setModalVisible] = useState(false);
     const [tempQuantity, setTempQuantity] = useState(0);
-  
+    const [imageError, setImageError] = useState(false)
+
     const handleAddToCart = () => {
       onAddToCart(item, tempQuantity);
       setModalVisible(false);
@@ -40,9 +44,15 @@ export default function Item({item, quantity, onAddToCart}:Props) {
     return (
       <>
         <TouchableOpacity style={styles.itemContainer} onPress={() => setModalVisible(true)}>
-          <Image source={{ uri: item.image }} style={styles.itemImage}/>
+          <Image 
+            source={imageError ? require('@/assets/images/icons8-no-image-50.png') : { uri: item.image }} 
+            onError={()=> setImageError(true)}
+            style={styles.itemImage}
+            />
           {onSale ? <Text style={styles.sale}>sale</Text> : null}
-          {quantity == null ? <Text style={styles.plusButton}>+</Text> : <Text style={styles.plusButton}>{quantity}</Text>}
+          {quantity == null ? 
+            <Text style={styles.plusButton}>+</Text> 
+            : <Text style={styles.plusButton}>{quantity}</Text>}
           <View style={styles.textContainer}>
             <Text style={styles.supplier}>{item.supplier}</Text>
             <Text style={styles.itemName}>{item.name}</Text>
@@ -51,31 +61,43 @@ export default function Item({item, quantity, onAddToCart}:Props) {
                     <Text style={styles.price}>${item.price} </Text>
                     <Text style={styles.discount}>${item.discounted_price}</Text>
                 </Text>
-                :
-                <Text style={styles.price}>${item.price}</Text>}
+                : <Text style={styles.price}>${item.price}</Text>}
           </View>
         </TouchableOpacity>
         <Modal
           animationType="slide"
           transparent={true}
           visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)} // Handles back button on Android
+          onRequestClose={() => setModalVisible(false)}
         >
           <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
             <View style={styles.modalContainer}>
               <TouchableWithoutFeedback>
-                <KeyboardAvoidingView
-                  style={styles.modalContent}
-                >
-                  <Text style={styles.modalTitle}>{item.name}</Text>
-                  <Image source={{ uri: item.image }} style={styles.modalImage} />
-                  <Text style={styles.modalPrice}>Price: ${item.price}</Text>
-
+                <KeyboardAvoidingView style={styles.modalContent}>
+                  {/* Item Description */}
+                  <View style={styles.modalItem}>
+                    <Image source={{ uri: item.image }} style={styles.modalImage} />
+                    <View style={styles.modalText}>
+                      <Text style={styles.modalTitle}>{item.name}</Text>
+                      <View style={styles.modalItemInfo}>
+                        <Text>Unit Size</Text>
+                        <Text>{item.unit_size}</Text>
+                      </View>
+                      <View style={styles.modalItemInfo}>
+                        <Text>Price</Text>
+                        <Text style={styles.price}>${item.price}</Text>
+                      </View>
+                      
+                    </View>
+                  </View>
+                  
                   {/* Quantity Adjustor */}
                   <View style={styles.quantityContainer}>
+                    <Text>Quantity</Text>
+                    <View style={styles.quantityChanger}>
                     <TouchableOpacity
                       style={styles.quantityButton}
-                      onPress={() => setTempQuantity(Math.max(1, tempQuantity - 1))}
+                      onPress={() => setTempQuantity(Math.max(0, tempQuantity - 1))}
                     >
                       <Text>-</Text>
                     </TouchableOpacity>
@@ -86,10 +108,13 @@ export default function Item({item, quantity, onAddToCart}:Props) {
                     >
                       <Text>+</Text>
                     </TouchableOpacity>
+                    </View>
                   </View>
 
                   {/* Add to Cart Button */}
-                  <Button title="Add to Cart" onPress={handleAddToCart} />
+                  <Pressable style={styles.addToCart} onPress={handleAddToCart}>
+                    <Text>Add to Cart</Text>
+                  </Pressable>
                 </KeyboardAvoidingView>
               </TouchableWithoutFeedback>
             </View>
@@ -167,12 +192,23 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  modalItem: {
+    flexDirection: "row",
+  },
+  modalItemInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+  modalText: {
+    width: "70%",
+    marginTop: 10,
+  },
   modalImage: {
-    width: '100%',
+    width: '30%',
     height: 150,
     resizeMode: 'contain',
     marginBottom: 10,
@@ -184,8 +220,12 @@ const styles = StyleSheet.create({
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     marginBottom: 20,
+  },
+  quantityChanger: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   quantityButton: {
     width: 30,
@@ -200,4 +240,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  addToCart: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    backgroundColor: 'lightblue',
+    borderRadius: 20,
+    marginBottom: 30,
+  }
 });

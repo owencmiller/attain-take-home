@@ -9,12 +9,13 @@ import {
   FlatList,
 } from 'react-native';
 import Item, {ItemProps} from '@/components/Item'; // Import the Item component
-
+import { useCart } from '@/context/CartContext';
+import commonStyles from '@/styles/commonStyles'
 
 
 export default function BrowseScreen() {
   // State variables to hold data and search text
-  const [cart, setCart] = useState([])
+  const {cart, setCart} = useCart();
   const [items, setItems] = useState([]); // Original list of items
   const [filteredItems, setFilteredItems] = useState([]); // Filtered list based on search
   const [searchText, setSearchText] = useState(''); // Text entered in the search bar
@@ -37,12 +38,20 @@ export default function BrowseScreen() {
 
   
   const handleAddToCart = (item:ItemProps, quantity:number) => {
-    setCart((prevCart) => [...prevCart, { ...item, quantity }]);
+    setCart(prevCart => {    
+      if (quantity === 0) {
+        const { [item.id]: _, ...rest } = prevCart;
+        return rest;
+      }
+  
+      return {
+        ...prevCart,
+        [item.id]: quantity,
+      };});
     console.log('Cart:', cart);
   };
 
 
-  // Function to handle search input and filter items
   const handleSearch = (text : string) => {
     setSearchText(text);
     const filtered = items.filter((item:ItemProps) =>
@@ -51,20 +60,18 @@ export default function BrowseScreen() {
     setFilteredItems(filtered);
   };
 
-  // Render each item in the grid
-  const renderItem = ({ item }) => (
+  const renderItem = ({item}) => (
     <Item 
       item={item}
       onAddToCart={handleAddToCart}
-      quantity={cart.find(cartItem => cartItem.id == item.id)?.quantity}
+      quantity={cart[item.id]}
       />
   );
 
   return (
-    <View style={styles.container}>
-      {/* Header with title and search bar */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Order Book</Text>
+    <View style={commonStyles.container}>
+      <View style={commonStyles.header}>
+        <Text style={commonStyles.title}>Order Book</Text>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color="#000" style={styles.searchIcon} />
           <TextInput
@@ -77,12 +84,11 @@ export default function BrowseScreen() {
 
       </View>
 
-      {/* Scrollable grid of items */}
       <FlatList
         data={filteredItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={2} // Display items in two columns
+        numColumns={2}
         contentContainerStyle={styles.listContent}
       />
     </View>
@@ -91,20 +97,6 @@ export default function BrowseScreen() {
 
 // Styles for the component
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#BDDADF', 
-  },
-  header: {
-    padding: 20,
-    paddingTop: 70,
-    backgroundColor: '#336A81',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
