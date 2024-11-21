@@ -1,5 +1,6 @@
 // Import necessary modules and components
 import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import {
   View,
   Text,
@@ -25,7 +26,7 @@ export default function BrowseScreen() {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => {
-        setItems(data); // Set the original items
+        setItems(data.filter((item) => item.name !== null)); // Set the original items
         setFilteredItems(data); // Set the filtered items to display
       })
       .catch((error) => {
@@ -54,13 +55,17 @@ export default function BrowseScreen() {
     <View style={styles.container}>
       {/* Header with title and search bar */}
       <View style={styles.header}>
-        <Text style={styles.title}>Browse Items</Text>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search by name"
-          value={searchText}
-          onChangeText={handleSearch}
-        />
+        <Text style={styles.title}>Order Book</Text>
+        <View style={styles.searchBar}>
+          <Ionicons name="search" size={20} color="#000" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search Items"
+            value={searchText}
+            onChangeText={handleSearch}
+          />
+        </View>
+
       </View>
 
       {/* Scrollable grid of items */}
@@ -79,10 +84,11 @@ export default function BrowseScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#336A81', 
+    backgroundColor: '#BDDADF', 
   },
   header: {
     padding: 20,
+    paddingTop: 70,
     backgroundColor: '#336A81',
   },
   title: {
@@ -91,12 +97,19 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 10,
     height: 40,
-    borderColor: '#CCC',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 20,
+    backgroundColor: 'white',
+    borderRadius: 30,
+    paddingHorizontal: 10,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
   },
   listContent: {
     backgroundColor: '#BDDADF',
