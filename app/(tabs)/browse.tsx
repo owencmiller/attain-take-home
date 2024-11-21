@@ -8,12 +8,13 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import Item from '@/components/Item'; // Import the Item component
+import Item, {ItemProps} from '@/components/Item'; // Import the Item component
 
 
 
 export default function BrowseScreen() {
   // State variables to hold data and search text
+  const [cart, setCart] = useState([])
   const [items, setItems] = useState([]); // Original list of items
   const [filteredItems, setFilteredItems] = useState([]); // Filtered list based on search
   const [searchText, setSearchText] = useState(''); // Text entered in the search bar
@@ -26,7 +27,7 @@ export default function BrowseScreen() {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => {
-        setItems(data.filter((item) => item.name !== null)); // Set the original items
+        setItems(data.filter((item:ItemProps) => item.name !== null)); // Set the original items
         setFilteredItems(data); // Set the filtered items to display
       })
       .catch((error) => {
@@ -34,10 +35,17 @@ export default function BrowseScreen() {
       });
   }, []);
 
+  
+  const handleAddToCart = (item:ItemProps, quantity:number) => {
+    setCart((prevCart) => [...prevCart, { ...item, quantity }]);
+    console.log('Cart:', cart);
+  };
+
+
   // Function to handle search input and filter items
   const handleSearch = (text : string) => {
     setSearchText(text);
-    const filtered = items.filter((item) =>
+    const filtered = items.filter((item:ItemProps) =>
       item.name.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredItems(filtered);
@@ -47,7 +55,8 @@ export default function BrowseScreen() {
   const renderItem = ({ item }) => (
     <Item 
       item={item}
-      onPress={() => {console.log(item.name)}}
+      onAddToCart={handleAddToCart}
+      quantity={cart.find(cartItem => cartItem.id == item.id)?.quantity}
       />
   );
 

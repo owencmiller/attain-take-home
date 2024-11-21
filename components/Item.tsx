@@ -1,28 +1,48 @@
 // Item.tsx
-import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Button,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+} from 'react-native';
 
-// Define the props for the Item component
-interface ItemProps {
-  item: {
-    id: number;
-    name: string;
-    image: string;
-    price: string;
-    supplier: string;
-    discounted_price: string;
-    // Include other properties from your item object as needed
-  };
-  onPress?: () => void;
+export interface ItemProps {
+  id: number;
+  name: string;
+  image: string;
+  price: string;
+  discounted_price: string;
 }
 
-export default function Item({item, onPress}:ItemProps) {
-    let onSale = item.discounted_price != "" 
-    return (
-        <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
-          <Image source={{ uri: item.image }} style={styles.itemImage} />
-          {onSale ? <Text style={styles.sale}>sale</Text> : null}
+interface Props {
+  item: ItemProps;
+  quantity: number;
+  onAddToCart: (item: ItemProps, quantity: number) => void;
+}
 
+export default function Item({item, quantity, onAddToCart}:Props) {
+    let onSale = item.discounted_price != "" 
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [tempQuantity, setTempQuantity] = useState(0);
+  
+    const handleAddToCart = () => {
+      onAddToCart(item, tempQuantity);
+      setModalVisible(false);
+    };
+
+    return (
+      <>
+        <TouchableOpacity style={styles.itemContainer} onPress={() => setModalVisible(true)}>
+          <Image source={{ uri: item.image }} style={styles.itemImage}/>
+          {onSale ? <Text style={styles.sale}>sale</Text> : null}
+          {quantity == null ? <Text style={styles.plusButton}>+</Text> : <Text style={styles.plusButton}>{quantity}</Text>}
           <View style={styles.textContainer}>
             <Text style={styles.supplier}>{item.supplier}</Text>
             <Text style={styles.itemName}>{item.name}</Text>
@@ -35,6 +55,47 @@ export default function Item({item, onPress}:ItemProps) {
                 <Text style={styles.price}>${item.price}</Text>}
           </View>
         </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)} // Handles back button on Android
+        >
+          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+            <View style={styles.modalContainer}>
+              <TouchableWithoutFeedback>
+                <KeyboardAvoidingView
+                  style={styles.modalContent}
+                >
+                  <Text style={styles.modalTitle}>{item.name}</Text>
+                  <Image source={{ uri: item.image }} style={styles.modalImage} />
+                  <Text style={styles.modalPrice}>Price: ${item.price}</Text>
+
+                  {/* Quantity Adjustor */}
+                  <View style={styles.quantityContainer}>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => setTempQuantity(Math.max(1, tempQuantity - 1))}
+                    >
+                      <Text>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.quantityText}>{tempQuantity}</Text>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => setTempQuantity(tempQuantity + 1)}
+                    >
+                      <Text>+</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Add to Cart Button */}
+                  <Button title="Add to Cart" onPress={handleAddToCart} />
+                </KeyboardAvoidingView>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        </>
       ); 
 }
 
@@ -81,5 +142,62 @@ const styles = StyleSheet.create({
   discount: {
     color: "red",
     textDecorationLine: "line-through"
-  }
+  },
+  plusButton: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    width: 30,
+    height: 30,
+    backgroundColor: '#336A81',
+    color: 'white',
+    fontSize: 24,
+    borderRadius: 15,
+    textAlign: 'center'
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalImage: {
+    width: '100%',
+    height: 150,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  modalPrice: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  quantityButton: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EEE',
+    borderRadius: 15,
+    marginHorizontal: 10,
+  },
+  quantityText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
