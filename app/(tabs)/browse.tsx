@@ -35,17 +35,15 @@ export default function BrowseScreen() {
 
   
   const handleAddToCart = (item:Item, quantity:number) => {
-    setCart(prevCart => {    
+    setCart(prevCart => {
+      const updatedCart = new Map(prevCart);
       if (quantity === 0) {
-        const { [item.id]: _, ...rest } = prevCart;
-        return rest;
+        updatedCart.delete(item.id);
+      } else {
+        updatedCart.set(item.id, { ...item, quantity });
       }
-  
-      return {
-        ...prevCart,
-        [item.id]: quantity,
-      };});
-    console.log('Cart:', cart);
+      return updatedCart
+    });
   };
 
 
@@ -61,7 +59,7 @@ export default function BrowseScreen() {
     <ItemComponent 
       item={item}
       onAddToCart={handleAddToCart}
-      quantity={cart[item.id]}
+      quantity={cart.has(item.id) ? cart.get(item.id)!.quantity : 0}
       />
   );
 
@@ -117,7 +115,6 @@ const styles = StyleSheet.create({
   itemContainer: {
     flex: 1,
     margin: 20,
-    marginBottom: 80
   },
   itemImage: {
     width: 100,

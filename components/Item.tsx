@@ -50,7 +50,7 @@ const ItemImageContainer = ({item, quantity, onSale} : ItemImageContainerProps) 
       />
       {onSale && <Text style={styles.sale}>sale</Text>}
       
-      {quantity == null 
+      {quantity == 0
         ? <View style={styles.quantityIndicatorLight}>
             <IconSymbol size={20} name="plus" color={'white'} /> 
           </View>
@@ -119,8 +119,7 @@ const ItemModal = ({item, onSale, tempQuantity, setTempQuantity, handleAddToCart
 
 const ItemComponent = ({ item, quantity, onAddToCart } : ItemProps) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [tempQuantity, setTempQuantity] = useState(0);
-
+  const [tempQuantity, setTempQuantity] = useState(quantity);
   const onSale = item.discounted_price !== '';
 
   const handleAddToCart = () => {
@@ -198,6 +197,7 @@ const styles = StyleSheet.create({
   textContainer: {
     width: '100%',
     padding: 5,
+
   },
   itemImage: {
     width: 100,
@@ -215,8 +215,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline'
   }, 
   priceContainer: {
-    fontFamily: "DongleReg",
-    fontSize: 27,
+    fontSize: 15,
   },
   price: {
     color: '#62bfdb',
