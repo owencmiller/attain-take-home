@@ -28,5 +28,4 @@ This started from the create-expo-app with a focus on development speed and visu
 ## TODO:
 Since a goal of this project was development speed, there are still a few things to implement for completeness:
 - Account for bad data from API
-- Cart View
-- SubTotal & Checkout
+- 

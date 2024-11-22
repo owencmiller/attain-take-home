@@ -14,6 +14,7 @@ const MAPPING = {
   'cart': 'cart-outline',
   'xmark': 'close',
   'plus': 'add',
+  'exclamationmark.circle': 'alert-circle'
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],

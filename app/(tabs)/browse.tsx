@@ -11,6 +11,7 @@ import {
 import ItemComponent, {Item} from '@/components/Item';
 import { useCart } from '@/context/CartContext';
 import commonStyles from '@/styles/commonStyles'
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 
 export default function BrowseScreen() {
@@ -18,6 +19,7 @@ export default function BrowseScreen() {
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [apiError, setApiError] = useState(false);
 
   const API_URL = 'https://retoolapi.dev/f0ee0v/items';
 
@@ -25,10 +27,12 @@ export default function BrowseScreen() {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => {
-        setItems(data.filter((item:Item) => item.name !== null));
+        // We won't show items if we don't have a name for them
+        setItems(data.filter((item:Item) => item.name !== null && item.price !== null));
         setFilteredItems(data);
       })
       .catch((error) => {
+        setApiError(true);
         console.error('Error fetching items:', error);
       });
   }, []);
@@ -79,15 +83,22 @@ export default function BrowseScreen() {
 
       </View>
 
-      <View style={styles.itemContainer}>
-        <FlatList
-          data={filteredItems}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          contentContainerStyle={styles.listContent}
-        />
-      </View>
+      {apiError
+        ? <View style={styles.errorContainer}>
+            <IconSymbol size={70} name="exclamationmark.circle" color={'#336A81'} />
+            <Text style={styles.errorText}>
+              We had an issue retrieving available items. Please check back later or contact customer support.
+            </Text>
+          </View>
+        : <View style={styles.itemContainer}>
+            <FlatList
+              data={filteredItems}
+              renderItem={renderItem}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              contentContainerStyle={styles.listContent}
+            />
+          </View>}
     </View>
   );
 }
@@ -125,4 +136,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: 'center',
   },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '50%',
+    margin: 50
+  },
+  errorText: {
+    textAlign: 'center',
+    fontFamily: 'DongleReg',
+    fontSize: 40,
+    lineHeight: 40,
+    marginTop: 20
+  }
 });
