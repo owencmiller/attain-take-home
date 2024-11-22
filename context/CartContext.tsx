@@ -1,12 +1,17 @@
 // context/CartContext.js
+import { Item } from '@/components/Item';
 import React, { createContext, useState, useContext } from 'react';
 
 // Create the context
 const CartContext = createContext({});
 
+export interface CartItem extends Item {
+  quantity: number
+}
+
 // Provider component
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState({}); // Shared state
+  const [cart, setCart] = useState([]); // Shared state
 
   return (
     <CartContext.Provider value={{ cart, setCart }}>

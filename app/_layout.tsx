@@ -15,7 +15,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    DongleBold: require('../assets/fonts/Dongle-Bold.ttf')
+    DongleBold: require('../assets/fonts/Dongle-Bold.ttf'),
+    DongleReg: require('../assets/fonts/Dongle-Regular.ttf')
   });
 
   useEffect(() => {

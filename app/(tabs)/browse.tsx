@@ -8,28 +8,25 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import Item, {ItemProps} from '@/components/Item'; // Import the Item component
+import ItemComponent, {Item} from '@/components/Item';
 import { useCart } from '@/context/CartContext';
 import commonStyles from '@/styles/commonStyles'
 
 
 export default function BrowseScreen() {
-  // State variables to hold data and search text
   const {cart, setCart} = useCart();
-  const [items, setItems] = useState([]); // Original list of items
-  const [filteredItems, setFilteredItems] = useState([]); // Filtered list based on search
-  const [searchText, setSearchText] = useState(''); // Text entered in the search bar
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
-  // Replace 'YOUR_API_URL_HERE' with your actual API endpoint
   const API_URL = 'https://retoolapi.dev/f0ee0v/items';
 
-  // Fetch items from the API when the component mounts
   useEffect(() => {
     fetch(API_URL)
       .then((response) => response.json())
       .then((data) => {
-        setItems(data.filter((item:ItemProps) => item.name !== null)); // Set the original items
-        setFilteredItems(data); // Set the filtered items to display
+        setItems(data.filter((item:Item) => item.name !== null));
+        setFilteredItems(data);
       })
       .catch((error) => {
         console.error('Error fetching items:', error);
@@ -37,7 +34,7 @@ export default function BrowseScreen() {
   }, []);
 
   
-  const handleAddToCart = (item:ItemProps, quantity:number) => {
+  const handleAddToCart = (item:Item, quantity:number) => {
     setCart(prevCart => {    
       if (quantity === 0) {
         const { [item.id]: _, ...rest } = prevCart;
@@ -54,14 +51,14 @@ export default function BrowseScreen() {
 
   const handleSearch = (text : string) => {
     setSearchText(text);
-    const filtered = items.filter((item:ItemProps) =>
+    const filtered = items.filter((item:Item) =>
       item.name.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredItems(filtered);
   };
 
   const renderItem = ({item}) => (
-    <Item 
+    <ItemComponent 
       item={item}
       onAddToCart={handleAddToCart}
       quantity={cart[item.id]}
@@ -84,13 +81,15 @@ export default function BrowseScreen() {
 
       </View>
 
-      <FlatList
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-      />
+      <View style={styles.itemContainer}>
+        <FlatList
+          data={filteredItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.listContent}
+        />
+      </View>
     </View>
   );
 }
@@ -118,10 +117,7 @@ const styles = StyleSheet.create({
   itemContainer: {
     flex: 1,
     margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    alignItems: 'center',
-    padding: 10,
+    marginBottom: 80
   },
   itemImage: {
     width: 100,

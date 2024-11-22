@@ -1,4 +1,3 @@
-// Item.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -7,13 +6,13 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  Button,
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
-  Pressable
+  Pressable,
 } from 'react-native';
+import { IconSymbol } from './ui/IconSymbol';
 
-export interface ItemProps {
+export interface Item {
   id: number;
   name: string;
   image: string;
@@ -23,116 +22,177 @@ export interface ItemProps {
   unit_size: string;
 }
 
-interface Props {
-  item: ItemProps;
+interface ItemProps {
+  item: Item;
   quantity: number;
-  onAddToCart: (item: ItemProps, quantity: number) => void;
+  onAddToCart: (item: Item, quantity: number) => void;
 }
 
-export default function Item({item, quantity, onAddToCart}:Props) {
-    let onSale = item.discounted_price != "" 
+interface ItemImageContainerProps {
+  item: Item;
+  quantity: number;
+  onSale: boolean;
+}
 
-    const [modalVisible, setModalVisible] = useState(false);
-    const [tempQuantity, setTempQuantity] = useState(0);
-    const [imageError, setImageError] = useState(false)
+const ItemImageContainer = ({item, quantity, onSale} : ItemImageContainerProps) => {
+  const [imageError, setImageError] = useState(false);
 
-    const handleAddToCart = () => {
-      onAddToCart(item, tempQuantity);
-      setModalVisible(false);
-    };
-
-    return (
-      <>
-        <TouchableOpacity style={styles.itemContainer} onPress={() => setModalVisible(true)}>
-          <Image 
-            source={imageError ? require('@/assets/images/icons8-no-image-50.png') : { uri: item.image }} 
-            onError={()=> setImageError(true)}
-            style={styles.itemImage}
-            />
-          {onSale ? <Text style={styles.sale}>sale</Text> : null}
-          {quantity == null ? 
-            <Text style={styles.plusButton}>+</Text> 
-            : <Text style={styles.plusButton}>{quantity}</Text>}
-          <View style={styles.textContainer}>
-            <Text style={styles.supplier}>{item.supplier}</Text>
-            <Text style={styles.itemName}>{item.name}</Text>
-            {onSale ?
-                <Text>
-                    <Text style={styles.price}>${item.price} </Text>
-                    <Text style={styles.discount}>${item.discounted_price}</Text>
-                </Text>
-                : <Text style={styles.price}>${item.price}</Text>}
+  return (
+    <View>
+      <Image
+        source={
+          imageError
+            ? require('@/assets/images/icons8-no-image-50.png')
+            : { uri: item.image }
+        }
+        onError={() => setImageError(true)}
+        style={styles.itemImage}
+      />
+      {onSale && <Text style={styles.sale}>sale</Text>}
+      
+      {quantity == null 
+        ? <View style={styles.quantityIndicatorLight}>
+            <IconSymbol size={20} name="plus" color={'white'} /> 
           </View>
-        </TouchableOpacity>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
-            <View style={styles.modalContainer}>
-              <TouchableWithoutFeedback>
-                <KeyboardAvoidingView style={styles.modalContent}>
-                  {/* Item Description */}
-                  <View style={styles.modalItem}>
-                    <Image source={{ uri: item.image }} style={styles.modalImage} />
-                    <View style={styles.modalText}>
-                      <Text style={styles.modalTitle}>{item.name}</Text>
-                      <View style={styles.modalItemInfo}>
-                        <Text>Unit Size</Text>
-                        <Text>{item.unit_size}</Text>
-                      </View>
-                      <View style={styles.modalItemInfo}>
-                        <Text>Price</Text>
-                        <Text style={styles.price}>${item.price}</Text>
-                      </View>
-                      
-                    </View>
-                  </View>
-                  
-                  {/* Quantity Adjustor */}
-                  <View style={styles.quantityContainer}>
-                    <Text>Quantity</Text>
-                    <View style={styles.quantityChanger}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setTempQuantity(Math.max(0, tempQuantity - 1))}
-                    >
-                      <Text>-</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.quantityText}>{tempQuantity}</Text>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setTempQuantity(tempQuantity + 1)}
-                    >
-                      <Text>+</Text>
-                    </TouchableOpacity>
-                    </View>
-                  </View>
+        : <View style={styles.quantityIndicatorDark}>
+            <Text style={styles.quantityIndicatorText}>{quantity}</Text>
+          </View>}
+      
+    </View>
+  );
+};
 
-                  {/* Add to Cart Button */}
-                  <Pressable style={styles.addToCart} onPress={handleAddToCart}>
-                    <Text>Add to Cart</Text>
-                  </Pressable>
-                </KeyboardAvoidingView>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-        </>
-      ); 
+interface ItemModalProps {
+  item: Item;
+  onSale: boolean;
+  tempQuantity: number;
+  setTempQuantity: React.Dispatch<React.SetStateAction<number>>;
+  handleAddToCart: () => void;
 }
 
-// Styles specific to the Item component
+const ItemModal = ({item, onSale, tempQuantity, setTempQuantity, handleAddToCart,} : ItemModalProps) => (
+  <><View style={styles.modalItem}>
+    <Image source={{ uri: item.image }} style={styles.modalImage} />
+    <View style={styles.modalText}>
+      <Text style={styles.modalTitle}>{item.name}</Text>
+      <View style={styles.modalItemInfo}>
+        <Text>Unit Size</Text>
+        <Text>{item.unit_size}</Text>
+      </View>
+      <View style={styles.modalItemInfo}>
+        <Text>Price</Text>
+        {onSale ? (
+              <View style={styles.modalPrice}>
+                <Text style={styles.discountedPrice}>${item.discounted_price} </Text>
+                <Text style={styles.originalPrice}>${item.price}</Text>
+              </View>
+            ) : (
+              <Text style={styles.price}>${item.price}</Text>)}
+      </View>
+    </View>
+    </View>
+    <View style={styles.quantityContainer}>
+      <Text style={styles.quantityText}>Quantity</Text>
+      <View style={styles.quantityChanger}>
+        <TouchableOpacity
+          style={styles.quantityButton}
+          onPress={() => setTempQuantity(Math.max(0, tempQuantity - 1))}
+        >
+          <Text>-</Text>
+        </TouchableOpacity>
+        <Text style={styles.quantityText}>{tempQuantity}</Text>
+        <TouchableOpacity
+          style={styles.quantityButton}
+          onPress={() => setTempQuantity(tempQuantity + 1)}
+        >
+          <Text>+</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+    
+    <Pressable style={styles.addToCart} onPress={handleAddToCart}>
+      <Text>Add to Cart</Text>
+    </Pressable>
+  
+  </>
+);
+
+const ItemComponent = ({ item, quantity, onAddToCart } : ItemProps) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [tempQuantity, setTempQuantity] = useState(0);
+
+  const onSale = item.discounted_price !== '';
+
+  const handleAddToCart = () => {
+    onAddToCart(item, tempQuantity);
+    setModalVisible(false);
+  };
+
+  return (
+    <>
+      <TouchableOpacity
+        style={styles.itemContainer}
+        onPress={() => setModalVisible(true)}
+      >
+        <ItemImageContainer item={item} quantity={quantity} onSale={onSale} />
+        <View style={styles.textContainer}>
+          <Text style={styles.supplier}>{item.supplier}</Text>
+          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.priceContainer}>
+            {onSale ? (
+              <>
+                <Text style={styles.discountedPrice}>${item.discounted_price} </Text>
+                <Text style={styles.originalPrice}>${item.price}</Text>
+              </>
+            ) : (
+              <Text style={styles.price}>${item.price}</Text>
+            )}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+              <KeyboardAvoidingView style={styles.modalContent}>
+                <TouchableOpacity 
+                  style={styles.closeButton}
+                  onPress={() => setModalVisible(false)}>
+                    <IconSymbol size={28} name="xmark" color={'#336A81'} />
+                </TouchableOpacity>
+
+                <ItemModal
+                  item={item}
+                  onSale={onSale}
+                  tempQuantity={tempQuantity}
+                  setTempQuantity={setTempQuantity}
+                  handleAddToCart={handleAddToCart}
+                />
+              </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </>
+  );
+};
+
+export default ItemComponent;
+
 const styles = StyleSheet.create({
   itemContainer: {
     flex: 1,
-    margin: 25,
+    margin: 20,
+    padding: 10,
     backgroundColor: 'white',
     borderRadius: 5,
     alignItems: 'center',
-    padding: 10,
+    justifyContent: 'center',
     fontFamily: "DongleBold"
   },
   textContainer: {
@@ -142,17 +202,31 @@ const styles = StyleSheet.create({
   itemImage: {
     width: 100,
     height: 100,
-    resizeMode: 'contain',
   },
   itemName: {
     color: "#4F899B",
+    fontFamily: "DongleBold",
+    fontSize: 23,
+    lineHeight: 13,
+    paddingTop: 15
   },
   supplier: {
     color: "#8ABDD2",
     textDecorationLine: 'underline'
   }, 
+  priceContainer: {
+    fontFamily: "DongleReg",
+    fontSize: 27,
+  },
   price: {
-    color: "mediumseagreen"
+    color: '#62bfdb',
+  },
+  originalPrice: {
+    color: "red",
+    textDecorationLine: "line-through",
+  },
+  discountedPrice: {
+    color: "mediumseagreen",
   },
   sale: {
     backgroundColor: 'mediumseagreen',
@@ -161,24 +235,37 @@ const styles = StyleSheet.create({
     width: 40,
     textAlign: 'center',
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: 0,
+    left: -10,
   },
-  discount: {
-    color: "red",
-    textDecorationLine: "line-through"
-  },
-  plusButton: {
+  quantityIndicatorLight: {
     position: 'absolute',
-    bottom: 80,
-    right: 20,
-    width: 30,
-    height: 30,
-    backgroundColor: '#336A81',
-    color: 'white',
-    fontSize: 24,
+    bottom: 0,
+    right: 0,
+    width: 25,
+    height: 25,
+    backgroundColor: '#61A5C2',
     borderRadius: 15,
-    textAlign: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  quantityIndicatorDark: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 25,
+    height: 25,
+    backgroundColor: '#336A81',
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  quantityIndicatorText: {
+    color: 'white',
+    fontSize: 30,
+    fontFamily: 'DongleBold',
+    position: 'absolute',
+    top: -7,
   },
   modalContainer: {
     flex: 1,
@@ -192,9 +279,9 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   modalTitle: {
-    fontSize: 15,
+    fontSize: 25,
     fontWeight: 'bold',
-    marginBottom: 10,
+    fontFamily: "DongleBold",
   },
   modalItem: {
     flexDirection: "row",
@@ -214,14 +301,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   modalPrice: {
-    fontSize: 16,
-    marginBottom: 20,
+    flexDirection: 'row'
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
+    fontFamily: 'DongleBold'
   },
   quantityChanger: {
     flexDirection: 'row',
@@ -237,15 +324,21 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   quantityText: {
-    fontSize: 16,
+    fontSize: 35,
     fontWeight: 'bold',
+    fontFamily: 'DongleBold'
   },
   addToCart: {
     alignItems: 'center',
     justifyContent: 'center',
     height: 40,
     backgroundColor: 'lightblue',
-    borderRadius: 20,
+    borderRadius: 10,
     marginBottom: 30,
-  }
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 15,
+  },
 });

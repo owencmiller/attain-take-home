@@ -11,7 +11,9 @@ const MAPPING = {
   'house.fill': 'home-sharp',
   'tray.2': 'file-tray-stacked-outline',
   'doc.text': 'receipt-outline', // TODO: find a better SF Icon
-  'cart': 'cart-outline'
+  'cart': 'cart-outline',
+  'xmark': 'close',
+  'plus': 'add',
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
